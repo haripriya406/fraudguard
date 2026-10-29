@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#090e1b">
+    <title>FraudGuard | Transaction Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="#overview" aria-label="FraudGuard home">
+                <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+                <span>fraud<span class="brand-accent">guard</span></span>
+            </a>
+            <div class="sidebar-label">WORKSPACE</div>
+            <nav class="side-nav" aria-label="Main navigation">
+                <a class="nav-link active" href="#overview"><span class="nav-icon">◫</span>Overview</a>
+                <a class="nav-link" href="#analysis"><span class="nav-icon">▤</span>Dataset analysis</a>
+                <a class="nav-link" href="#prediction"><span class="nav-icon">⌁</span>Fraud detection</a>
+                <a class="nav-link" href="#model"><span class="nav-icon">◉</span>Model performance</a>
+            </nav>
+            <div class="sidebar-bottom">
+                <div class="secure-mark">✳</div>
+                <p>SECURE ANALYTICS</p>
+                <span>Private by design. Data stays local.</span>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="breadcrumb"><span>Workspace</span><span class="crumb-slash">/</span><strong>Overview</strong></div>
+                <div class="topbar-right">
+                    <span class="live-indicator"><i></i> LOCAL ENVIRONMENT</span>
+                    <div class="avatar" aria-label="FraudGuard user">FG</div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <section class="hero" id="overview">
+                    <div>
+                        <div class="eyebrow"><span class="eyebrow-line"></span> TRANSACTION INTELLIGENCE</div>
+                        <h1>Fraud detection,<br><span>with clarity.</span></h1>
+                        <p class="hero-copy">Monitor transaction patterns and assess risk with a machine learning model trained on your data.</p>
+                    </div>
+                    <div class="hero-orbit" aria-hidden="true">
+                        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+                        <div class="orbit-core"><span>FG</span></div>
+                        <i class="orbit-dot dot-one"></i><i class="orbit-dot dot-two"></i><i class="orbit-dot dot-three"></i>
+                    </div>
+                </section>
+
+                <section class="notice {% if not dataset_ready %}notice-warning{% else %}notice-info{% endif %}" role="status">
+                    <span class="notice-icon">{% if dataset_ready %}i{% else %}!{% endif %}</span>
+                    <div><strong>{% if dataset_ready %}Dataset status{% else %}Dataset configuration needed{% endif %}</strong>
+                        <p>{{ dataset_message }}</p>
+                        {% if columns %}
+                        <details class="columns-details"><summary>Inspect detected columns</summary><code>{{ columns | join(", ") }}</code></details>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <section class="stats-grid" aria-label="Dataset statistics">
+                    <article class="stat-card">
+                        <div class="stat-top"><span class="stat-label">TRANSACTIONS IN DATASET</span><span class="stat-icon blue">▤</span></div>
+                        <div class="stat-value">{{ "{:,}".format(total_transactions) if total_transactions is not none else "—" }}</div>
+                        <div class="stat-foot"><span class="muted">Rows loaded from your CSV</span></div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-top"><span class="stat-label">FRAUDULENT</span><span class="stat-icon red">↗</span></div>
+                        <div class="stat-value">{{ "{:,}".format(fraud_count) if fraud_count is not none else "—" }}</div>
+                        <div class="stat-foot"><span class="muted">Based on configured target labels</span></div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-top"><span class="stat-label">LEGITIMATE</span><span class="stat-icon green">✓</span></div>
+                        <div class="stat-value">{{ "{:,}".format(legitimate_count) if legitimate_count is not none else "—" }}</div>
+                        <div class="stat-foot"><span class="muted">Based on configured target labels</span></div>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-top"><span class="stat-label">FRAUD RATE</span><span class="stat-icon purple">%</span></div>
+                        <div class="stat-value">{{ (fraud_percent|string + "%") if fraud_percent is not none else "—" }}</div>
+                        <div class="stat-foot"><span class="muted">Share of labeled transactions</span></div>
+                    </article>
+                </section>
+
+                <div class="content-grid">
+                    <section class="panel chart-panel" id="analysis">
+                        <div class="panel-heading">
+                            <div><div class="panel-kicker">DATASET ANALYSIS</div><h2>Transaction overview</h2></div>
+                            <span class="panel-tag">LIVE DATA</span>
+                        </div>
+                        {% if chart %}
+                        <div class="chart-wrap"><img class="distribution-chart" src="data:image/png;base64,{{ chart }}" alt="Bar chart comparing {{ fraud_count }} fraudulent and {{ legitimate_count }} legitimate transactions"></div>
+                        <div class="chart-legend"><span><i class="legend-dot fraud-dot"></i> Fraudulent <strong>{{ "{:,}".format(fraud_count) }}</strong></span><span><i class="legend-dot legit-dot"></i> Legitimate <strong>{{ "{:,}".format(legitimate_count) }}</strong></span></div>
+                        {% if feature_chart %}
+                        <div class="feature-chart-heading"><span>FEATURE DISTRIBUTIONS</span><span>First available dataset features</span></div>
+                        <div class="feature-chart-wrap"><img src="data:image/png;base64,{{ feature_chart }}" alt="Charts showing distributions for the first available non-target dataset features"></div>
+                        {% endif %}
+                        {% else %}
+                        <div class="empty-chart"><div class="empty-chart-icon">▥</div><strong>Analysis will appear here</strong><p>Load a dataset and configure its target column to see real transaction counts.</p></div>
+                        {% endif %}
+                    </section>
+
+                    <section class="panel model-panel" id="model">
+                        <div class="panel-heading">
+                            <div><div class="panel-kicker">MODEL PERFORMANCE</div><h2>Evaluation metrics</h2></div>
+                            <span class="status-pill {% if model_ready %}status-good{% else %}status-pending{% endif %}"><i></i>{{ "READY" if model_ready else "PENDING" }}</span>
+                        </div>
+                        {% if metrics %}
+                        <div class="metric-list">
+                            {% for label, key in [("Accuracy", "accuracy"), ("Precision", "precision"), ("Recall", "recall"), ("F1 score", "f1")] %}
+                            <div class="metric-row"><span>{{ label }}</span><div class="metric-track"><i style="width: {{ (metrics[key] * 100)|round(1) }}%"></i></div><strong>{{ (metrics[key] * 100)|round(1) }}%</strong></div>
+                            {% endfor %}
+                        </div>
+                        <p class="model-message">{{ model_message }} Metrics are measured on a held-out test split.</p>
+                        {% else %}
+                        <div class="empty-metrics"><span class="metric-placeholder">—</span><p>{{ model_message }}</p></div>
+                        {% endif %}
+                        <div class="model-foot"><span>Algorithm</span><strong>Random Forest</strong></div>
+                    </section>
+                </div>
+
+                <section class="panel prediction-panel" id="prediction">
+                    <div class="panel-heading prediction-heading">
+                        <div><div class="panel-kicker">REAL-TIME ASSESSMENT</div><h2>Analyze a transaction</h2><p class="section-copy">Enter values for the dataset features to get a model prediction.</p></div>
+                        <div class="scan-icon" aria-hidden="true">⌁</div>
+                    </div>
+                    {% if model_ready and feature_columns %}
+                    <form id="prediction-form" class="prediction-form">
+                        <div class="form-grid">
+                            {% for column in feature_columns %}
+                            <label class="field">
+                                <span>{{ column }}</span>
+                                {% if feature_types[column] == "numeric" %}
+                                <input name="{{ column }}" type="number" step="any" placeholder="Enter {{ column }}" autocomplete="off">
+                                {% else %}
+                                <input name="{{ column }}" type="text" placeholder="Enter {{ column }}" autocomplete="off">
+                                {% endif %}
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <div class="form-actions"><span class="form-hint">Blank fields will be filled using training data.</span><button class="primary-button" type="submit"><span>Analyze transaction</span><b>→</b></button></div>
+                    </form>
+                    <div id="prediction-result" class="prediction-result" aria-live="polite" hidden></div>
+                    {% else %}
+                    <div class="prediction-locked"><span class="lock-icon">⌑</span><div><strong>Prediction is not available yet</strong><p>{{ model_message }} Configure your dataset and train the model to generate predictions.</p></div></div>
+                    {% endif %}
+                </section>
+
+                <footer class="footer"><span>FRAUDGUARD <i>•</i> DATA-DRIVEN PROTECTION</span><span>Built for local analysis <span class="footer-shield">⬡</span></span></footer>
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
